@@ -49,4 +49,21 @@ void helper(int idx, vector<int>& nums, vector<int>& ds) {
 
 ### Rule of Thumb:
 - **Binary decision for each index?** → Take/Not Take.  
-- **Explore all future choices?** → For Loop + Recursion.  
+- **Explore all future choices starting from this index?** → For Loop + Recursion.
+
+
+
+## Handling Duplicates in Recursion Problems
+
+- **Step 1:** Always sort the array first.
+- **Step 2:** Skip duplicates at the same recursion level:
+  - In a for loop:
+    `if (i > idx && nums[i] == nums[i-1]) continue;`
+- **Step 3:** This ensures unique results in problems like:
+  - Subsets with duplicates
+  - Combination Sum II
+  - Unique permutations
+
+👉 Rule of Thumb:  
+Whenever you see “unique / no duplicates in output” → think **Sort + Skip Duplicates**.
+
