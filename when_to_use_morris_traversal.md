@@ -44,11 +44,11 @@ Morris is **not** another traversal like preorder or inorder.
 
 It is only a different implementation of DFS traversals.
 
-Think of it as:
+Think of it as a
 
 > **Recursion/Stack Replacement Technique**
 
-Instead of
+Instead of using
 
 - Recursion
 - Explicit Stack
@@ -57,24 +57,20 @@ it uses
 
 - Temporary Threads
 
+The traversal order remains exactly the same.
+
 ---
 
 # Mental Model
 
-Tree traversal can be done using
-
 ```
-Traversal Order
-        │
-        ▼
-Recursion
-Stack
-Morris
+                Traversal Order
+                      │
+                      ▼
+         Recursion / Stack / Morris
 ```
 
-The traversal order remains the same.
-
-Only the implementation changes.
+Morris only changes **how** we perform the traversal, **not** the traversal itself.
 
 ---
 
@@ -106,6 +102,15 @@ Applications:
 - Kth Largest
 - Descending BST Traversal
 
+Reverse Morris is simply the mirror image of Morris Inorder.
+
+Changes:
+
+- Go right instead of left.
+- Find inorder successor instead of predecessor.
+- Create temporary thread:
+  successor → current
+
 ---
 
 ## 3. Preorder
@@ -114,15 +119,47 @@ Applications:
 Root → Left → Right
 ```
 
-Can also be implemented using Morris.
+Can also be implemented using Morris Traversal.
 
 ---
 
-## Postorder?
+## 4. Postorder
 
-Possible, but considerably more complicated.
+A dedicated Morris Postorder algorithm **does exist**, but it is considerably more complicated than inorder or preorder.
 
-It is rarely expected in interviews.
+It typically requires:
+
+- A dummy root
+- Reversing edges temporarily
+- Restoring those edges
+
+Hence, it is rarely expected in interviews.
+
+### Easier Alternative
+
+Another way to obtain postorder is:
+
+Perform
+
+```
+Root → Right → Left
+```
+
+using Morris Traversal, store the traversal, and reverse the final answer.
+
+Because
+
+```
+Reverse(
+    Root → Right → Left
+)
+=
+Left → Right → Root
+```
+
+This produces the required postorder traversal.
+
+> **Note:** This approach requires `O(N)` space for storing the output, although the traversal itself still uses `O(1)` auxiliary space.
 
 ---
 
@@ -145,7 +182,7 @@ Notice the common pattern:
 
 > We only process nodes when they are visited.
 
-No information needs to be returned from children.
+No information needs to be returned from child nodes.
 
 ---
 
@@ -161,15 +198,13 @@ Examples:
 - Maximum Path Sum
 - Largest BST
 - Lowest Common Ancestor (General Binary Tree)
-- Tree DP problems
-
-These problems require child results before computing the parent's answer.
+- Tree DP Problems
 
 Example:
 
 ```cpp
 height(root) =
-1 + max(height(left), height(right));
+1 + max(height(root->left), height(root->right));
 ```
 
 The parent depends on information coming back from both children.
@@ -198,7 +233,7 @@ or
 pair<int,int> solve(TreeNode* root)
 ```
 
-you're probably solving a **postorder/DP problem**, not a Morris problem.
+then you're probably solving a **Postorder / Tree DP** problem, **not** a Morris Traversal problem.
 
 ---
 
@@ -206,24 +241,23 @@ you're probably solving a **postorder/DP problem**, not a Morris problem.
 
 ```
 Does the problem only require visiting nodes?
-        │
-       Yes
-        │
-        ▼
+                │
+               Yes
+                │
+                ▼
 Which traversal solves it?
-
-        │
-        ▼
+                │
+                ▼
 Can recursion solve it?
-        │
-       Yes
-        │
-        ▼
-Need O(1) extra space?
-        │
-      Yes
-        │
-        ▼
+                │
+               Yes
+                │
+                ▼
+Need O(1) auxiliary space?
+                │
+               Yes
+                │
+                ▼
 Think Morris Traversal
 ```
 
@@ -235,44 +269,54 @@ Think Morris Traversal
 Does the parent require information
 from its children?
 
-        │
-      Yes
-        │
-        ▼
+          │
+         Yes
+          │
+          ▼
 Use Postorder Recursion
 
-NOT Morris
+NOT Morris Traversal
 ```
 
 ---
 
-# Reverse Morris Traversal
+# Important Interview Pitfall
 
-Reverse Morris is simply the mirror image of Morris Inorder.
+## Never return in the middle of a Morris Traversal.
 
-Instead of
+Morris Traversal temporarily modifies the tree by creating **threads**.
 
+If you return before removing all the temporary threads, the tree remains corrupted and may even contain cycles.
+
+This can lead to:
+
+- Infinite loops
+- Stack Overflow during recursive destruction
+- Incorrect behavior in later tree operations
+
+### ❌ Wrong
+
+```cpp
+if(k == 0)
+    return curr->val;
 ```
-Left → Root → Right
+
+### ✅ Better
+
+```cpp
+if(k == 0)
+    ans = curr->val;
+
+// Continue the traversal.
+
+// Remove every temporary thread.
+
+return ans;
 ```
 
-it performs
+### Golden Rule
 
-```
-Right → Root → Left
-```
-
-Changes:
-
-- Go right instead of left.
-- Find inorder successor instead of predecessor.
-- Create thread:
-  successor → current
-
-Applications:
-
-- Kth Largest
-- Descending BST Traversal
+> **Every temporary thread you create must be removed before the function exits.**
 
 ---
 
@@ -294,7 +338,7 @@ Implement it recursively.
 
 ### Step 3
 
-Need iterative?
+Need an iterative solution?
 
 Use a stack.
 
@@ -310,31 +354,33 @@ Think Morris Traversal.
 
 # Important Insight
 
-Morris is an **optimization technique**, not a problem-solving technique.
+Morris Traversal is an **optimization technique**, not a problem-solving technique.
 
-It changes
+It replaces
 
 ```
-Recursion
+Recursion / Stack
 ```
 
-into
+with
 
 ```
 Temporary Threads
 ```
 
-without changing the traversal order or the algorithm itself.
+without changing the traversal order or the underlying algorithm.
 
 ---
 
 # Summary Table
 
 | Problem Type | Morris? |
-|--------------|---------|
+|--------------|----------|
 | Inorder Traversal | ✅ |
 | Preorder Traversal | ✅ |
 | Reverse Inorder | ✅ |
+| Postorder (Dedicated Morris) | ✅ (Complex) |
+| Postorder (Root → Right → Left + Reverse) | ✅ (Uses `O(N)` output space) |
 | BST Validation | ✅ |
 | Recover BST | ✅ |
 | Kth Smallest | ✅ |
@@ -346,11 +392,25 @@ without changing the traversal order or the algorithm itself.
 | Balanced Tree | ❌ |
 | Maximum Path Sum | ❌ |
 | Largest BST | ❌ |
-| LCA (General Tree) | ❌ |
+| Lowest Common Ancestor (General Tree) | ❌ |
 | Tree DP Problems | ❌ |
 
 ---
 
 # One-Line Rule to Remember
 
-> **If the problem only needs you to _visit_ nodes in a specific DFS order, Morris may replace recursion or a stack. If the problem needs information to _flow back_ from children to parents, Morris is generally not the right tool.**
+> **If the problem only requires you to _visit_ nodes in a specific DFS order, Morris Traversal can often replace recursion or a stack. If the problem requires information to _flow back_ from children to parents, Morris Traversal is generally not the right tool.**
+
+---
+
+# Final Takeaway
+
+> **Think of Morris Traversal as a space optimization for DFS traversals—not as a new traversal or a new algorithm.**
+
+Whenever you solve a tree problem, ask yourself:
+
+1. **What traversal naturally solves it?**
+2. **Can recursion solve it?**
+3. **Do I need to optimize auxiliary space to `O(1)`?**
+
+If the answer to the last question is **Yes**, Morris Traversal is worth considering.
